@@ -1,0 +1,5 @@
+.venv
+.gitignore
+*.egg-info/
+*.sh
+*.csv
