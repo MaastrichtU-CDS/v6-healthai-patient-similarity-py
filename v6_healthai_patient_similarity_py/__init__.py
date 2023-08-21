@@ -8,7 +8,8 @@ import pandas as pd
 from scipy.spatial import distance
 from sklearn.cluster import KMeans
 from vantage6.tools.util import info
-from v6_kmeans_py.helper import coordinate_task
+from v6_healthai_patient_similarity_py.helper import coordinate_task
+from v6_healthai_patient_similarity_py.helper import survival_rate
 
 
 def master(
@@ -103,12 +104,31 @@ def master(
         centroids = list(list(centre) for centre in new_centroids)
         iteration += 1
 
-    # Final result
-    info('Master algorithm complete')
-    info(f'Result: {centroids}')
+    # Averaged centroids
+    info(f'Result for centroids: {centroids}')
+
+    # Get survival profiles for the clusters per node
+    info('Getting survival profiles per node')
+    input_ = {
+        'method': 'survival_profiles_partial',
+        'kwargs': {'kmeans': kmeans, 'columns': columns}
+    }
+    results = coordinate_task(client, input_, ids)
+
+    # Averaging survival profiles
+    info('Averaging survival profiles')
+    profiles = []
+    for i in range(k):
+        profile = np.zeros(len(results[0][0][0]))
+        patients = 0
+        for result in results:
+            profile += np.array(result[0][i])
+            patients += result[1][i]
+        profiles.append(list(profile/patients))
 
     return {
-        'centroids': centroids
+        'centroids': centroids,
+        'profiles': profiles
     }
 
 
@@ -202,3 +222,40 @@ def RPC_kmeans_partial(
         centroids.append(centroid)
 
     return centroids
+
+
+def RPC_survival_profiles_partial(
+        df: pd.DataFrame, kmeans, columns: list
+) -> list:
+    """ Partial method for survival profiles
+
+    Parameters
+    ----------
+    df
+        DataFrame with input data
+    kmeans
+        Result of kmeans
+    columns
+        List with columns to be used for getting cluster membership
+
+    Returns
+    -------
+    profiles
+        List with the partial result for survival profiles
+    """
+    # Drop rows with NaNs
+    df = df.dropna(how='any')
+
+    info('Getting memberships')
+    X = df[columns].values
+    df['cluster'] = kmeans.predict(X)
+
+    info('Getting survival rates')
+    profiles = []
+    patients = []
+    for i in range(len(kmeans.cluster_centers_)):
+        df_tmp = df[df['cluster'] == i]
+        profiles.append(survival_rate(df_tmp, cutoff=730, delta=30))
+        patients.append(len(df_tmp))
+
+    return profiles, patients
