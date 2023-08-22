@@ -57,6 +57,7 @@ def master(
     }
     results = coordinate_task(client, input_, ids[:1])
     centroids = results[0]
+    info(f'Initial: {centroids}')
 
     # The next steps are run until convergence is achieved or the maximum
     # number of iterations reached. In order to evaluate convergence,
@@ -151,15 +152,15 @@ def RPC_initialize_centroids_partial(
     centroids
         Initial guess for global centroids
     """
-    # Drop rows with NaNs
-    data = data.dropna(how='any')
+    # Select columns and drop rows with NaNs
+    data = data[columns].dropna(how='any')
+
+    # Remove duplicates
+    data = data.drop_duplicates()
 
     # TODO: use a better method to initialize centroids
     info(f'Randomly sample {k} data points to use as initial centroids')
-    if columns:
-        df = data[columns].sample(k)
-    else:
-        df = data.sample(k)
+    df = data.sample(k)
 
     # Organise initial guess for centroids as a list
     centroids = []
