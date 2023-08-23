@@ -30,7 +30,22 @@ and adhering to the following standard:
     "description": "patient m stage",
     "type": "categorical",
     "values": ["M0", "M1", "M1a", "M1b", "M1c"]
-  }
+  },
+  "date_of_diagnosis": {
+      "description": "date the patient was diagnosed",
+      "type": "string",
+      "format": "%Y-%m-%d"
+  },
+  "date_of_fu": {
+      "description": "date the patient had the last follow up visit",
+      "type": "string",
+      "format": "%Y-%m-%d"
+  },
+  "vital_status": {
+      "description": "patient vital status",
+      "type": "categorical",
+      "values": ["alive", "dead"]
+  },
 }
 ```
 
@@ -53,9 +68,9 @@ input_ = {
     'master': True,
     'kwargs': {
         'org_ids': [2, 3],          # organisations to run kmeans
-        'k': 3,                     # number of clusters to compute
-        'epsilon': 0.05,            # threshold for convergence criterion
-        'max_iter': 300,            # maximum number of iterations to perform
+        'k': 4,                     # number of clusters to compute
+        'epsilon': 0.01,            # threshold for convergence criterion
+        'max_iter': 50,             # maximum number of iterations to perform
         'columns': ['t', 'n', 'm']  # columns to be used for clustering
     }
 }
