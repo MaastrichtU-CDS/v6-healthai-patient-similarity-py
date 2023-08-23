@@ -57,7 +57,6 @@ def master(
     }
     results = coordinate_task(client, input_, ids[:1])
     centroids = results[0]
-    info(f'Initial: {centroids}')
 
     # The next steps are run until convergence is achieved or the maximum
     # number of iterations reached. In order to evaluate convergence,
@@ -85,10 +84,8 @@ def master(
         X = np.array(local_centroids)
 
         # Average centroids by running kmeans on local results
-        # TODO: add other averaging options
         info('Run global averaging for centroids')
         kmeans = KMeans(n_clusters=k, random_state=0).fit(X)
-        info(f'Kmeans result {kmeans}')
         new_centroids = kmeans.cluster_centers_
 
         # Compute the sum of the magnitudes of the centroids differences
@@ -104,9 +101,6 @@ def master(
         # Re-define the centroids and update iterations counter
         centroids = list(list(centre) for centre in new_centroids)
         iteration += 1
-
-    # Averaged centroids
-    info(f'Result for centroids: {centroids}')
 
     # Get survival profiles for the clusters per node
     info('Getting survival profiles per node')
@@ -134,7 +128,7 @@ def master(
 
 
 def RPC_initialize_centroids_partial(
-        data: pd.DataFrame, k: int, columns: list = None
+        data: pd.DataFrame, k: int, columns: list
 ) -> list:
     """ Initialise global centroids for kmeans
 
@@ -158,7 +152,6 @@ def RPC_initialize_centroids_partial(
     # Remove duplicates
     data = data.drop_duplicates()
 
-    # TODO: use a better method to initialize centroids
     info(f'Randomly sample {k} data points to use as initial centroids')
     df = data.sample(k)
 
@@ -171,7 +164,7 @@ def RPC_initialize_centroids_partial(
 
 
 def RPC_kmeans_partial(
-        df: pd.DataFrame, k: int, centroids: list, columns: list = None
+        df: pd.DataFrame, k: int, centroids: list, columns: list
 ) -> list:
     """ Partial method for federated kmeans
 
@@ -191,12 +184,8 @@ def RPC_kmeans_partial(
     centroids
         List with the partial result for centroids
     """
-    # Drop rows with NaNs
-    df = df.dropna(how='any')
-
-    info('Selecting columns')
-    if columns:
-        df = df[columns]
+    # Select columns and drop rows with NaNs
+    df = df[columns].dropna(how='any')
 
     info('Calculating distance matrix')
     distances = np.zeros([len(df), k])
@@ -235,7 +224,7 @@ def RPC_survival_profiles_partial(
     df
         DataFrame with input data
     kmeans
-        Result of kmeans
+        Result of scikit-learn kmeans clustering
     columns
         List with columns to be used for getting cluster membership
 
@@ -245,7 +234,7 @@ def RPC_survival_profiles_partial(
         List with the partial result for survival profiles
     """
     # Drop rows with NaNs
-    df = df.dropna(how='any')
+    df = df.dropna(how='any', subset=columns)
 
     info('Getting memberships')
     X = df[columns].values

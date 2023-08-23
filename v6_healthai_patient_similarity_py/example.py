@@ -31,7 +31,7 @@ master_task = client.create_new_task(
         'kwargs': {
             'org_ids': [0, 1],
             'k': 4,
-            'epsilon': 0.1,
+            'epsilon': 0.01,
             'max_iter': 50,
             'columns': ['t_num', 'n_num', 'm_num']
         }
