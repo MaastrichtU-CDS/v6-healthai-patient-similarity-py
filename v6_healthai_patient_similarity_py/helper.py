@@ -80,7 +80,9 @@ def survival_rate(df: pd.DataFrame, cutoff: int, delta: int) -> list:
     all_dead = len(df[df['vital_status'] == 'dead'])
     survival_rates = []
     for time in times:
-        dead = len(df[df['survival_days'] <= time])
+        dead = len(
+            df[(df['survival_days'] <= time) & (df['vital_status'] == 'dead')]
+        )
         alive = (all_dead - dead) + all_alive
         survival_rates.append(alive)
 
