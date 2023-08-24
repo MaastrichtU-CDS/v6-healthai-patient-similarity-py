@@ -21,7 +21,7 @@ setup(
     description='Vantage6 algorithm for patient similarity for HealthAI',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/aiaragomes/v6-healthai-patient-similarity-py',
+    url='https://github.com/MaastrichtU-CDS/v6-healthai-patient-similarity-py',
     license='MIT License',
     keywords=['Vantage6', 'Federated Algorithms', 'Unsupervised Learning'],
     packages=find_packages(),
