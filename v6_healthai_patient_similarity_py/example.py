@@ -33,7 +33,7 @@ master_task = client.create_new_task(
             'k': 4,
             'epsilon': 0.01,
             'max_iter': 50,
-            'columns': ['t_num', 'n_num', 'm_num']
+            'columns': ['t', 'n', 'm']
         }
     },
     organization_ids=[0, 1]

@@ -16,20 +16,18 @@ and adhering to the following standard:
   },
   "t": {
     "description": "patient t stage",
-    "type": "categorical",
-    "values": [
-      "T0", "T1", "T1a", "T1b", "T1c", "T2", "T2a", "T2b", "T3", "T3a", "T4"
-    ]
+    "type": "integer",
+    "values": [0, 1, 2, 3, 4]
   },
   "n": {
     "description": "patient n stage",
-    "type": "categorical",
-    "values": ["N0", "N1", "N2", "N2b", "N2c", "N3"]
+    "type": "integer",
+    "values": [0, 1, 2, 3]
   },
   "m": {
     "description": "patient m stage",
-    "type": "categorical",
-    "values": ["M0", "M1", "M1a", "M1b", "M1c"]
+    "type": "integer",
+    "values": [0, 1]
   },
   "date_of_diagnosis": {
       "description": "date the patient was diagnosed",
