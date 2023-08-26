@@ -2,11 +2,14 @@
 
 """ Federated algorithm for patient similarity for TNM data of NSCLC patients
 """
+import re
+
 import numpy as np
 import pandas as pd
 
 from scipy.spatial import distance
 from sklearn.cluster import KMeans
+from pandas.api.types import is_string_dtype
 from vantage6.tools.util import info
 from v6_healthai_patient_similarity_py.helper import coordinate_task
 from v6_healthai_patient_similarity_py.helper import survival_rate
@@ -146,11 +149,22 @@ def RPC_initialize_centroids_partial(
     centroids
         Initial guess for global centroids
     """
+    # TODO: add a data preparation method and save results, then use them in
+    #  the other partial methods, how to do this?
     # Select columns and drop rows with NaNs
     data = data[columns].dropna(how='any')
 
     # Remove duplicates
     data = data.drop_duplicates()
+
+    # Convert from categorical to numerical TNM, if necessary, values such as
+    # Tx, Nx, Mx are converted to -1
+    for col in columns:
+        if is_string_dtype(data[col]):
+            data[col] = data[col].apply(lambda x: re.compile(r'\d').findall(x))
+            data[col] = data[col].apply(
+                lambda x: int(x[0]) if len(x) != 0 else -1
+            )
 
     info(f'Randomly sample {k} data points to use as initial centroids')
     df = data.sample(k)
@@ -186,6 +200,15 @@ def RPC_kmeans_partial(
     """
     # Select columns and drop rows with NaNs
     df = df[columns].dropna(how='any')
+
+    # Convert from categorical to numerical TNM, if necessary, values such as
+    # Tx, Nx, Mx are converted to -1
+    for col in columns:
+        if is_string_dtype(df[col]):
+            df[col] = df[col].apply(lambda x: re.compile(r'\d').findall(x))
+            df[col] = df[col].apply(
+                lambda x: int(x[0]) if len(x) != 0 else -1
+            )
 
     info('Calculating distance matrix')
     distances = np.zeros([len(df), k])
@@ -235,6 +258,15 @@ def RPC_survival_profiles_partial(
     """
     # Drop rows with NaNs
     df = df.dropna(how='any', subset=columns)
+
+    # Convert from categorical to numerical TNM, if necessary, values such as
+    # Tx, Nx, Mx are converted to -1
+    for col in columns:
+        if is_string_dtype(df[col]):
+            df[col] = df[col].apply(lambda x: re.compile(r'\d').findall(x))
+            df[col] = df[col].apply(
+                lambda x: int(x[0]) if len(x) != 0 else -1
+            )
 
     info('Getting memberships')
     X = df[columns].values
