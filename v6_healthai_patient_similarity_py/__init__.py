@@ -263,10 +263,13 @@ def RPC_survival_profiles_partial(
     # Tx, Nx, Mx are converted to -1
     for col in columns:
         if is_string_dtype(df[col]):
+            info(f'Converting column {col} to numeric')
             df[col] = df[col].apply(lambda x: re.compile(r'\d').findall(x))
             df[col] = df[col].apply(
                 lambda x: int(x[0]) if len(x) != 0 else -1
             )
+            unique = df[col].unique()
+            info(f'Unique values are now {unique}')
 
     info('Getting memberships')
     X = df[columns].values
