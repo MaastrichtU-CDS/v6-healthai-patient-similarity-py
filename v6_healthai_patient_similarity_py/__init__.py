@@ -86,6 +86,10 @@ def master(
                 local_centroids.append(local_centroid)
         X = np.array(local_centroids)
 
+        # Remove centroids with NaN or infinite values
+        mask = np.any(np.isnan(X) | np.isinf(X), axis=1)
+        X = X[~mask]
+
         # Average centroids by running kmeans on local results
         info('Run global averaging for centroids')
         kmeans = KMeans(n_clusters=k, random_state=0).fit(X)
@@ -166,6 +170,9 @@ def RPC_initialize_centroids_partial(
                 lambda x: int(x[0]) if len(x) != 0 else -1
             )
 
+    # Make sure no NaNs are left after transformation
+    data = data.dropna(how='any')
+
     info(f'Randomly sample {k} data points to use as initial centroids')
     df = data.sample(k)
 
@@ -209,6 +216,9 @@ def RPC_kmeans_partial(
             df[col] = df[col].apply(
                 lambda x: int(x[0]) if len(x) != 0 else -1
             )
+
+    # Make sure no NaNs are left after transformation
+    df = df.dropna(how='any')
 
     info('Calculating distance matrix')
     distances = np.zeros([len(df), k])
@@ -263,13 +273,13 @@ def RPC_survival_profiles_partial(
     # Tx, Nx, Mx are converted to -1
     for col in columns:
         if is_string_dtype(df[col]):
-            info(f'Converting column {col} to numeric')
             df[col] = df[col].apply(lambda x: re.compile(r'\d').findall(x))
             df[col] = df[col].apply(
                 lambda x: int(x[0]) if len(x) != 0 else -1
             )
-            unique = df[col].unique()
-            info(f'Unique values are now {unique}')
+
+    # Make sure no NaNs are left after transformation
+    df = df.dropna(how='any')
 
     info('Getting memberships')
     X = df[columns].values
